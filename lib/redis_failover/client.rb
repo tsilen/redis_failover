@@ -205,14 +205,17 @@ module RedisFailover
       begin
         client_for(method).send(method, *args, &block)
       rescue *CONNECTIVITY_ERRORS => ex
-        logger.error("Error while handling `#{method}` - #{ex.inspect}")
-        logger.error(ex.backtrace.join("\n"))
 
         if tries < @max_retries
+          logger.warn("Error while handling `#{method}` - #{ex.inspect}, retrying.")
+          logger.warn(ex.backtrace.first)
           tries += 1
           build_clients
           sleep(RETRY_WAIT_TIME)
           retry
+        else
+          logger.error("Error while handling `#{method}` - #{ex.inspect}")
+          logger.error(ex.backtrace.join("\n"))
         end
         raise
       ensure
