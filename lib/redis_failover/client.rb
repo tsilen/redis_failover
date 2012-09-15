@@ -31,8 +31,16 @@ module RedisFailover
     # we proactively define methods that dispatch to the underlying redis
     # calls.
     Redis.public_instance_methods(false).each do |method|
+      next if self.method_exists?(method)
       define_method(method) do |*args, &block|
         dispatch(method, *args, &block)
+      end
+    end
+
+    Redis::Client.public_instance_methods(false).each do |method|
+      next if self.method_exists?(method)
+      define_method(method) do |*args, &block|
+        actual_client.send(method, *args, &block)
       end
     end
 
@@ -76,6 +84,13 @@ module RedisFailover
     #   end
     def on_node_change(&callback)
       @on_node_change = callback
+    end
+
+    # Returns self
+    #
+    # @return [RedisFailover::Client]
+    def client
+      self
     end
 
     # Dispatches redis operations to master/slaves.
@@ -151,6 +166,13 @@ module RedisFailover
     end
 
     private
+
+    # Return the underlying redis client
+    #
+    # @return [Redis::Client]
+    def actual_client(*args, &block)
+      dispatch(:client, *args, &block)
+    end
 
     # Sets up the underlying ZooKeeper connection.
     def setup_zk
