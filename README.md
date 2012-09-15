@@ -129,6 +129,16 @@ The full set of options that can be passed to RedisFailover::Client are:
      :logger        - logger override (optional)
      :retry_failure - indicate if failures should be retried (default true)
      :max_retries   - max retries for a failure (default 3)
+     :safe_mode     - indicates if safe mode is used or not (default true)
+     :master_only   - indicates if only redis master is used (default false)
+
+The RedisFailover::Client also supports a custom callback that will be invoked whenever the list of redis clients changes. Example usage:
+
+    RedisFailover::Client.new(:zkservers => 'localhost:2181,localhost:2182,localhost:2183') do |client|
+      client.on_node_change do |master, slaves|
+        logger.info("Nodes changed! master: #{master}, slaves: #{slaves}")
+      end
+    end
 
 ## Manual Failover
 
@@ -145,7 +155,7 @@ redis_failover uses YARD for its API documentation. Refer to the generated [API 
 
 ## Requirements
 
-- redis_failover is actively tested against MRI 1.9.2/1.9.3 and JRuby 1.6.7 (1.9 mode only). Other rubies may work, although I don't actively test against them.
+- redis_failover is actively tested against MRI 1.8.7/1.9.2/1.9.3 and JRuby 1.6.7 (1.9 mode only). Other rubies may work, although I don't actively test against them.
 - redis_failover requires a ZooKeeper service cluster to ensure reliability and data consistency. ZooKeeper is very simple and easy to get up and running. Please refer to this [Quick ZooKeeper Guide](https://github.com/ryanlecompte/redis_failover/wiki/Quick-ZooKeeper-Guide) to get up and running quickly if you don't already have ZooKeeper as a part of your environment.
 
 ## Considerations
@@ -160,10 +170,13 @@ redis_failover uses YARD for its API documentation. Refer to the generated [API 
 
 ## Resources
 
+- Check out Steve Whittaker's [redis-failover-test](https://github.com/swhitt/redis-failover-test) project which shows how to test redis_failover in a non-trivial configuration using Vagrant/Chef.
 - To learn more about Redis master/slave replication, see the [Redis documentation](http://redis.io/topics/replication).
 - To learn more about ZooKeeper, see the official [ZooKeeper](http://zookeeper.apache.org/) site.
 - See the [Quick ZooKeeper Guide](https://github.com/ryanlecompte/redis_failover/wiki/Quick-ZooKeeper-Guide) for a quick guide to getting ZooKeeper up and running with redis_failover.
 - To learn more about how ZooKeeper handles network partitions, see [ZooKeeper Failure Scenarios](http://wiki.apache.org/hadoop/ZooKeeper/FailureScenarios)
+- Feel free to join #zk-gem on the IRC freenode network. We're usually hanging out there talking about ZooKeeper and redis_failover.
+
 
 ## License
 

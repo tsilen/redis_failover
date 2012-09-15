@@ -35,8 +35,8 @@ module RedisFailover
       @done = true
       @node.wakeup
       @monitor_thread.join if @monitor_thread
-    rescue
-      # best effort
+    rescue => ex
+      logger.warn("Failed to gracefully shutdown watcher for #{@node}")
     end
 
     private
@@ -59,12 +59,16 @@ module RedisFailover
             notify(:available)
             @node.wait
           end
-        rescue NodeUnavailableError
+        rescue NodeUnavailableError => ex
+          logger.debug("Failed to communicate with node #{@node}: #{ex.inspect}")
           failures += 1
           if failures >= @max_failures
             notify(:unavailable)
             failures = 0
           end
+        rescue Exception => ex
+          logger.error("Unexpected error while monitoring node #{@node}: #{ex.inspect}")
+          logger.error(ex.backtrace.join("\n"))
         end
       end
     end

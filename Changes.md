@@ -1,3 +1,43 @@
+=======
+0.9.6
+-----------
+- Handle the node discovery error condition where the znode points to a master that is now a slave.
+
+0.9.5
+-----------
+- Introduce a safer master node discovery process for the Node Manager (#34)
+- Improved shutdown process for Node Manager
+
+0.9.4
+-----------
+- Preserve original master by reading from existing znode state.
+- Prevent Timeout::Error from bringing down the process (#32) (@eric)
+
+0.9.3
+-----------
+- Add lock assert for Node Manager.
+
+0.9.2
+-----------
+- Improved exception handling in NodeWatcher.
+
+0.9.1
+-----------
+- Improve nested exception handling.
+- Fix manual failover support when znode does not exist first.
+- Various fixes to work better with 1.8.7.
+
+0.9.0
+-----------
+- Make Node Manager's lock path vary with its main znode. (Bira)
+- Node Manager's znode for holding current list of redis nodes is no longer ephemeral. This is unnecessary since the current master should only be changed by redis_failover.
+- Introduce :master_only option for RedisFailover::Client (disabled by default). This option configures the client to direct all read/write operations to the master.
+- Introduce :safe_mode option (enabled by default). This option configures the client to purge its redis clients when a ZK session expires or when the client hasn't recently heard from the node manager.
+- Introduce RedisFailover::Client#on_node_change callback notification for when the currently known list of master/slave redis nodes changes.
+- Added #current_master and #current_slaves to RedisFailover::Client. This is useful for programmatically doing things based on the current master/slaves.
+- redis_node_manager should start if no redis servers are available (#29)
+- Better handling of ZK session expirations in Node Manager.
+
 0.8.9
 -----------
 - Handle errors raised by redis 3.x client (tsilen) 
